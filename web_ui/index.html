@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code-Aware RAG Interface</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        pre {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+        }
+        .source-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .source-item pre {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .score-badge {
+            font-size: 0.8em;
+            background-color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h1 class="mb-4">Code-Aware Assistant</h1>
+        
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Ask about your codebase</h5>
+                            <div>
+                                <select id="taskType" class="form-select">
+                                    <option value="">General question</option>
+                                    <option value="microservice_analysis">Microservice Analysis</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <form id="queryForm">
+                            <div class="mb-3">
+                                <textarea id="queryInput" class="form-control" rows="4" placeholder="Ask a question about your code..."></textarea>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="form-group">
+                                        <label for="resultsCount">Number of context snippets:</label>
+                                        <input type="number" id="resultsCount" class="form-control" value="5" min="1" max="20">
+                                    </div>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <button type="submit" class="btn btn-primary">Submit</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="loadingIndicator" class="text-center my-4 d-none">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Processing your query...</p>
+        </div>
+
+        <div id="responseContainer" class="mb-4 d-none">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Response</h5>
+                </div>
+                <div class="card-body">
+                    <div id="responseContent"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="sourcesContainer" class="d-none">
+            <h5 class="mb-3">Referenced Sources</h5>
+            <div id="sourcesList" class="accordion"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('queryForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const query = document.getElementById('queryInput').value;
+            const topK = parseInt(document.getElementById('resultsCount').value);
+            const taskType = document.getElementById('taskType').value;
+            
+            if (!query) return;
+            
+            // Show loading indicator
+            document.getElementById('loadingIndicator').classList.remove('d-none');
+            document.getElementById('responseContainer').classList.add('d-none');
+            document.getElementById('sourcesContainer').classList.add('d-none');
+            
+            try {
+                const response = await fetch('/query', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        query: query,
+                        top_k: topK,
+                        task_type: taskType || null
+                    })
+                });
+                
+                const data = await response.json();
+                
+                // Hide loading indicator
+                document.getElementById('loadingIndicator').classList.add('d-none');
+                
+                // Display response
+                document.getElementById('responseContainer').classList.remove('d-none');
+                document.getElementById('responseContent').innerHTML = `<pre>${data.answer}</pre>`;
+                
+                // Display sources
+                document.getElementById('sourcesContainer').classList.remove('d-none');
+                const sourcesList = document.getElementById('sourcesList');
+                sourcesList.innerHTML = '';
+                
+                data.sources.forEach((source, index) => {
+                    const sourceItem = document.createElement('div');
+                    sourceItem.className = 'accordion-item';
+                    sourceItem.innerHTML = `
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#source-${index}">
+                                <span class="me-2">${source.repo_name} / ${source.file_path}</span>
+                                <span class="badge score-badge">Score: ${source.score}</span>
+                            </button>
+                        </h2>
+                        <div id="source-${index}" class="accordion-collapse collapse">
+                            <div class="accordion-body">
+                                <pre>${source.text}</pre>
+                            </div>
+                        </div>
+                    `;
+                    sourcesList.appendChild(sourceItem);
+                });
+                
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('loadingIndicator').classList.add('d-none');
+                alert('An error occurred while processing your query.');
+            }
+        });
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+# Vector Database Configuration
+qdrant:
+  url: self-hosted-rag-qdrant
+  port: 6333
+  collection_name: code_repository
+
+# Embedding Model Configuration
+embedding_model: BAAI/bge-base-en-v1.5
+
+# Repository Paths (adjust as needed)
+repositories:
+  - /repos/
+
+# LLM Configuration 
+ollama_host: self-hosted-rag-ollama
+ollama_model: qwen3:4b
+
+# Query Service Configuration
+query_service:
+  max_context_length: 4000
+  default_top_k: 5

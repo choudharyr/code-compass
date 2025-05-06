@@ -1,0 +1,8 @@
+numpy<2.0
+nltk
+qdrant-client==1.6.4
+huggingface-hub==0.17.3
+sentence-transformers==2.2.2
+pyyaml==6.0
+gitpython==3.1.40
+torch==2.0.1 --index-url https://download.pytorch.org/whl/cpu

@@ -1,0 +1,98 @@
+name: self-hosted-rag
+
+services:
+  # Vector Database
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: self-hosted-rag-qdrant
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant_storage:/qdrant/storage
+    networks:
+      - rag_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/readiness"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Code Indexer
+  code_indexer:
+    build:
+      context: ./code_indexer
+      dockerfile: Dockerfile
+    container_name: self-hosted-rag-indexer
+    volumes:
+      - ./repos:/repos  # Mount your repositories here
+      - ./config:/config  # Mount configuration
+    depends_on:
+      - qdrant
+    networks:
+      - rag_network
+    environment:
+      - CONFIG_PATH=/config/config.yaml
+    # Run once and exit (can be manually triggered when needed)
+    restart: "no"
+
+  # LLM Service with Ollama
+  ollama:
+    build:
+      context: ./ollama
+      dockerfile: Dockerfile
+    container_name: self-hosted-rag-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    networks:
+      - rag_network
+  #  deploy:
+  #    resources:
+  #      reservations:
+  #        devices:
+  #          - driver: nvidia
+  #            count: all
+  #            capabilities: [gpu]
+    # Optional: comment out the above GPU configuration if running on CPU only
+
+  # Query API Service
+  query_service:
+    build:
+      context: ./query_service
+      dockerfile: Dockerfile
+    container_name: self-hosted-rag-query-service
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./config:/config
+    depends_on:
+      - qdrant
+      - ollama
+    networks:
+      - rag_network
+    environment:
+      - CONFIG_PATH=/config/config.yaml
+    restart: unless-stopped
+
+  # Simple UI (optional)
+  web_ui:
+    image: nginx:alpine
+    container_name: self-hosted-rag-web-ui
+    ports:
+      - "8080:80"
+    volumes:
+      - ./web_ui:/usr/share/nginx/html
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - query_service
+    networks:
+      - rag_network
+
+networks:
+  rag_network:
+    driver: bridge
+
+volumes:
+  qdrant_storage:
+  ollama_models:
