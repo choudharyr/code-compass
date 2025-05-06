@@ -2,7 +2,7 @@
 
 A fully self-hosted Retrieval-Augmented Generation (RAG) system that understands your codebase and provides intelligent responses to your code-related questions. All components run locally - no data leaves your machine.
 
-## 🌟 Features
+## Features
 
 - **Code-Aware AI**: Ask questions about your codebase and get intelligent responses
 - **Fully Self-Hosted**: All components run locally with no external API calls
@@ -11,7 +11,7 @@ A fully self-hosted Retrieval-Augmented Generation (RAG) system that understands
 - **Privacy-First**: Your code never leaves your machine
 - **Web UI**: Simple web interface for interacting with the system
 
-## 🏗️ Architecture
+## Architecture
 
 The system is composed of the following containerized components:
 
@@ -21,7 +21,7 @@ The system is composed of the following containerized components:
 4. **Query Service**: Connects all components and handles user queries
 5. **Web UI**: Provides a simple interface for users
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -33,7 +33,7 @@ The system is composed of the following containerized components:
 
 1. Clone the repository
    ```bash
-   git clone https://github.com/yourusername/self-hosted-rag.git
+   git clone https://github.com/choudharyr/code-compass.git
    cd self-hosted-rag
    ```
 
@@ -93,14 +93,14 @@ query_service:
   default_top_k: 5
 ```
 
-## 📊 Performance Considerations
+## Performance Considerations
 
 - First query after startup may take several minutes as the LLM loads
 - Subsequent queries are much faster
 - CPU-only systems work but are significantly slower than GPU-equipped systems
 - For better performance on CPU-only systems, consider using quantized models like `mistral:7b-instruct-q4_0`
 
-## 🔄 Extending the System
+## Extending the System
 
 ### Adding Jira/Confluence Integration
 
@@ -115,7 +115,7 @@ The system can be extended to include Jira and Confluence data by creating addit
 
 A specialized prompt is included for analyzing monolithic applications and suggesting microservice decomposition. Use the "Microservice Analysis" option in the web UI.
 
-## 🛠️ Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
@@ -124,7 +124,7 @@ A specialized prompt is included for analyzing monolithic applications and sugge
 3. **Model loading errors**: Ensure your system has enough RAM (16GB minimum, 32GB recommended)
 4. **404 errors from LLM**: Verify the model name in config matches what's available in Ollama
 
-## 🔒 Security Considerations
+## Security Considerations
 
 This system is designed for internal use within trusted networks. It does not include authentication or TLS encryption. For production use, consider adding:
 
@@ -132,11 +132,11 @@ This system is designed for internal use within trusted networks. It does not in
 2. TLS encryption for all services
 3. Network isolation for the Docker containers
 
-## 📜 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgements
+## Acknowledgements
 
 - [Qdrant](https://qdrant.tech/) for the vector database
 - [Ollama](https://ollama.ai/) for the local LLM runtime
