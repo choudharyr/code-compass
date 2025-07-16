@@ -33,7 +33,7 @@ The system is composed of the following containerized components:
 
 1. Clone the repository
    ```bash
-   git clone https://github.com/choudharyr/code-compass.git
+   git clone https://github.com/choudharyr/code-compass.git self-hosted-rag
    cd self-hosted-rag
    ```
 
